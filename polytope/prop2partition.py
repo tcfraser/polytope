@@ -71,7 +71,7 @@ class Partition(object):
     """Partition of a set.
 
     A C{Partition} is an iterable container of sets
-    over C{Partition.set} and these must implement the methods:
+    over C{Partition.domain} and these must implement the methods:
 
         - union, __add__
         - difference
@@ -90,7 +90,10 @@ class Partition(object):
         C{domain} is used to avoid conflicts with
         the python builtin set function.
         """
-        self.set = domain
+        self.domain = domain
+        self.regions = list()
+        self._elements = None  # appears to be used
+        # uninitialized in method `Partition.preserves`.
 
     def __len__(self):
         return len(self.regions)
@@ -146,7 +149,7 @@ class Partition(object):
         """
         logger.info('checking if PPP is a partition.')
 
-        l,u = self.set.bounding_box
+        l,u = self.domain.bounding_box
         ok = True
         for i, region in enumerate(self.regions):
             for j, other in enumerate(self.regions[0:i]):
@@ -236,6 +239,10 @@ class MetricPartition(Partition, nx.Graph):
     If the space is also a measure space,
     then volume information is used for diagnostic purposes.
     """
+    def __init__(self, domain):
+        self.adj = None  # sp.lil_matrix
+        super(MetricPartition, self).__init__(domain)
+
     def compute_adj(self):
         """Update the adjacency matrix by checking all region pairs.
 
