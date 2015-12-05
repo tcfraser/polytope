@@ -25,6 +25,12 @@ def check_glpk():
         return False
     return True
 
+def check_mosek():
+    try:
+        import mosek
+    except ImportError:
+        return False
+    return True
 
 def check_mpl():
     try:
@@ -67,6 +73,10 @@ cvxopt_msg = (
     'CVXOPT not found.\n'
     'To utilize CVXOPT as the default linear program solver,\n'
     'please install from http://cvxopt.org')
+mosek_msg = (
+    'MOSEK not found.\n'
+    'To utilize MOSEK as the default linear program solver,\n'
+    'please install from http://mosek.com')
 
 # These are nice to have but not necessary. Each item is of the form
 #
@@ -78,7 +88,8 @@ cvxopt_msg = (
 optionals = dict(
     cvxopt=[check_cvxopt, 'CVXOPT found.', cvxopt_msg],
     glpk=[check_glpk, 'GLPK found.', glpk_msg],
-    matplotlib=[check_mpl, 'matplotlib found.', mpl_msg])
+    matplotlib=[check_mpl, 'matplotlib found.', mpl_msg],
+    mosek=[check_mosek, 'MOSEK found.', mosek_msg])
 
 
 def retrieve_git_info():

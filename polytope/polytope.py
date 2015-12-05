@@ -63,17 +63,20 @@ import numpy as np
 from polytope.quickhull import quickhull
 try:
     from cvxopt import matrix, solvers
-    import cvxopt.glpk
-    from polytope.esp import esp
-    lp_solver = 'glpk'
-    # Hide optimizer output
-    solvers.options['show_progress'] = False
-    solvers.options['LPX_K_MSGLEV'] = 0
-    solvers.options['msg_lev'] = 'GLP_MSG_OFF'
+    from .esp import esp
+    import mosek
+    lp_solver = 'mosek'
 except ImportError:
-    from scipy import optimize
-    lp_solver = 'scipy'
-
+    try:
+        import cvxopt.glpk
+        lp_solver = 'glpk'
+        # Hide optimizer output
+        solvers.options['show_progress'] = False
+        solvers.options['LPX_K_MSGLEV'] = 0
+        solvers.options['msg_lev'] = 'GLP_MSG_OFF'
+    except ImportError:
+        from scipy import optimize
+        lp_solver = 'scipy'
 
 logger = logging.getLogger(__name__)
 # Nicer numpy output
@@ -2164,16 +2167,16 @@ def simplices2polytopes(points, triangles):
 
 
 def lpsolve(c, G, h):
-    """Try to solve linear program with `cvxopt.glpk`, else `scipy`.
+    """Try to solve linear program with `cvxopt.glpk` or `mosek`, else `scipy`.
 
     @return: solution with status as in `scipy.optimize.linprog`
     @rtype: `dict(status=int, x=argmin, fun=min_value)`
     """
     result = dict()
-    if lp_solver == 'glpk':
+    if lp_solver == 'glpk' or lp_solver == 'mosek':
         sol = solvers.lp(
             matrix(c), matrix(G), matrix(h),
-            None, None, 'glpk')
+            None, None, lp_solver)
         if sol['status'] == 'optimal':
             result['status'] = 0
         elif sol['status'] == 'primal infeasible':
